@@ -1,0 +1,17 @@
+# Package cache and distribution files
+puf_qideal_model/__pycache__
+puf_qideal_model/__pycache__/*
+PUF_quasideal_model.egg-info
+PUF_quasideal_model.egg-info/*
+wheels
+wheels/*
+
+# Jupyter checkpoints
+Tutorial/.ipynb_checkpoints
+Tutorial/.ipynb_checkpoints/*
+
+# Virtual environemts
+.venv
+.venv/*
+launch-venv.bat
+
