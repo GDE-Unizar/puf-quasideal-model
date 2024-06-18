@@ -5,6 +5,10 @@ PUF_quasideal_model.egg-info
 PUF_quasideal_model.egg-info/*
 wheels
 wheels/*
+dist
+dist/*
+build
+build/*
 
 # Jupyter checkpoints
 Tutorial/.ipynb_checkpoints
