@@ -11,6 +11,9 @@ build
 build/*
 
 # Jupyter checkpoints
+*.ipynb
+.ipynb_checkpoints
+.ipynb_checkpoints/*
 Tutorial/.ipynb_checkpoints
 Tutorial/.ipynb_checkpoints/*
 
