@@ -22,3 +22,7 @@ Tutorial/.ipynb_checkpoints/*
 .venv/*
 launch-venv.bat
 
+# Test
+test
+test/*
+

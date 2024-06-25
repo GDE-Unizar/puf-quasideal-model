@@ -44,67 +44,86 @@ class HammingDistribution:
     
     Parameters
     ----------
-    filename : str, optional, 'None' by default
-        Path to the file that contains the intra/inter Hamming distributios which is used to feed this class' object. The format of this file is:
-            # Intra- / inter-hamming distributions 
-            ninst: [Number of instances simulated]
-            nrep: [Number of repetitions]
-            nbits: [Number of PUF's responses bits]
-            pintra: [Average intra-distance simulated]
-            pinter: [Average inter-distance simulated]
-            intra: [List of intra-distance values]
-            inter: [List of inter-distance values]
-            
-    ninst : int, optiona, 'None' by default
+    ninst : int, optional, 'None' by default
         Number of instances simulated
-        
-    nrep : int, optiona, 'None' by default
+
+    nrep : int, optional, 'None' by default
         Number of repetitions
-        
-    nbits : int, optiona, 'None' by default
+
+    nbits : int, optional, 'None' by default
         Number of PUF's responses bits
-               
+
     intra : list of floats, optional, 'None' by default
         Dataset of intra-distance values
-        
+
     inter : list of floats, optional, 'None' by default
-        Dataset of inter-distance values
-        
-    Warning
+        Dataset of inter-distance values    
+    
+    Methods
     -------
-    Either 'filename' or all 'ninst', 'nrep', 'nbits', 'pintra', 'pinter', 'intra', 'inter' parameters must be provided.
+    load(filename)
+        This function allows you to load a Hamming distribution in text format. Caution: this function overrides any parameters defined when creating the class object.
+        
+    save(filename)
+        Saves the Hamming distribution object to a file.
+        
+    plot(intra=True, intra_fit=True, inter=True, inter_fit=True)
+        Plots the Hamming distribution. If intra or intra_fit is True, it plots the intra-distribution and its fit. If inter or inter_fit is True, plots the inter-distribution and its fit.
     """
-    def __init__(self, filename=None, ninst=None, nrep=None, nbits=None, intra=None, inter=None):
-        if isinstance(filename, type(None)):
-            try:
-                self.ninst=ninst
-                """int: Number of instances simulated"""
-                self.nrep=nrep
-                """int: Number of repetitions"""
-                self.nbits=nbits
-                """int: Number of PUF's responses bits"""
-                self.intra=intra
-                """list of floats: Dataset of intra-distance values"""
-                self.inter=inter
-                """list of floats: Dataset of inter-distance values"""
-            except Exception as e:
-                print(f'Exception {e} occurred. Since filename is not provided, make sure that all the remaining arguments are properly provided.')                
-        else:
-            data_read = _read_dictionary_from_file(filename)
-            self.ninst=int(data_read['ninst'])
-            self.nrep=int(data_read['nrep'])
-            self.nbits=int(data_read['nbits'])
-            self.intra=list(map(float, data_read['intra'].strip(' []\n').split(',')))
-            self.inter=list(map(float, data_read['inter'].strip(' []\n').split(',')))
-                
+    def __init__(self, ninst=None, nrep=None, nbits=None, intra=None, inter=None):
+        """
+        Constructor method.
+        """
+        self.ninst=ninst
+        """int: Number of instances simulated"""
+        self.nrep=nrep
+        """int: Number of repetitions"""
+        self.nbits=nbits
+        """int: Number of PUF's responses bits"""
+        self.intra=intra
+        """list of floats: Dataset of intra-distance values"""
+        self.inter=inter
+        """list of floats: Dataset of inter-distance values"""
+        if not(isinstance(intra, type(None)) or isinstance(nbits, type(None))):
+            self.pintra=_array(self.intra).mean()/self.nbits
+            """Average Hamming intra-distance"""
+        if not(isinstance(inter, type(None)) or isinstance(nbits, type(None))):
+            self.pinter=_array(self.inter).mean()/self.nbits
+            """Average Hamming intra-distance"""
+        if not(isinstance(intra, type(None)) or isinstance(nbits, type(None))):
+            self.dks_intra=abs(_histogram(self.intra, bins=self.nbits+1, range=(0,self.nbits+1), density=True)[0].cumsum()-_binom.pmf(k=range(self.nbits+1),n=self.nbits,p=self.pintra).cumsum()).max()
+            """Dks value for the introduced Hamming intra-distance distribution against the theoretical binomial of paramaters n=nbits, p=pintra"""
+        if not(isinstance(inter, type(None)) or isinstance(nbits, type(None))):
+            self.dks_inter=abs(_histogram(self.inter, bins=self.nbits+1, range=(0,self.nbits+1), density=True)[0].cumsum()-_binom.pmf(k=range(self.nbits+1),n=self.nbits,p=self.pinter).cumsum()).max()
+            """Dks value for the introduced Hamming inter-distance distribution against the theoretical binomial of paramaters n=nbits, p=pinter"""        
+        
+    def load(self, filename):
+        """
+        This function allows you to load a Hamming distribution in text format. Caution: this function overrides any parameters defined when creating the class object.
+        
+        Parameters
+        ----------
+        filename : str, optional, 'None' by default
+            Path to the file that contains the intra/inter Hamming distributios which is used to feed this class' object. The format of this file is:
+                # Intra- / inter-hamming distributions 
+                ninst: [Number of instances simulated]
+                nrep: [Number of repetitions]
+                nbits: [Number of PUF's responses bits]
+                pintra: [Average intra-distance simulated]
+                pinter: [Average inter-distance simulated]
+                intra: [List of intra-distance values]
+                inter: [List of inter-distance values]        
+        """
+        data_read = _read_dictionary_from_file(filename)
+        self.ninst=int(data_read['ninst'])
+        self.nrep=int(data_read['nrep'])
+        self.nbits=int(data_read['nbits'])
+        self.intra=list(map(float, data_read['intra'].strip(' []\n').split(',')))
+        self.inter=list(map(float, data_read['inter'].strip(' []\n').split(',')))
         self.pintra=_array(self.intra).mean()/self.nbits
-        """Average Hamming intra-distance"""
         self.pinter=_array(self.inter).mean()/self.nbits
-        """Average Hamming intra-distance"""        
         self.dks_intra=abs(_histogram(self.intra, bins=self.nbits+1, range=(0,self.nbits+1), density=True)[0].cumsum()-_binom.pmf(k=range(self.nbits+1),n=self.nbits,p=self.pintra).cumsum()).max()
-        """Dks value for the introduced Hamming intra-distance distribution against the theoretical binomial of paramaters n=nbits, p=pintra"""
         self.dks_inter=abs(_histogram(self.inter, bins=self.nbits+1, range=(0,self.nbits+1), density=True)[0].cumsum()-_binom.pmf(k=range(self.nbits+1),n=self.nbits,p=self.pinter).cumsum()).max()
-        """Dks value for the introduced Hamming inter-distance distribution against the theoretical binomial of paramaters n=nbits, p=pinter"""
             
     def save(self, filename):
         """
@@ -161,80 +180,108 @@ class DksDistribution:
     """
     This class contains the Kolmogorov-Smirnov (Dks) distance distributions between the ideal and simulated binomial distributions for the intra / inter Hamming distance based on a quasideal PUF model.
     
-    Parameters
-    ----------
-    filename : str, optional, 'None' by default
-        Path to the file that contains the Dks intra/inter distributios which is used to feed this class' object. The format of this file is:
-            # Dks Intra / inter distributions
-            ninst: [Number of instances simulated]
-            nrep: [Number of repetitions]
-            nbits: [Number of PUF's responses bits]
-            pintra: [Average intra-distance simulated]
-            pinter: [Average inter-distance simulated]
-            intra: [List of Dks intra-distance values]
-            inter: [List of Dks inter-distance values]
-            
     ninst : int, optiona, 'None' by default
         Number of instances simulated
-        
+
     nrep : int, optiona, 'None' by default
         Number of repetitions
-        
+
     nbits : int, optiona, 'None' by default
         Number of PUF's responses bits
-        
+
     pintra : float, optiona, 'None' by default
         Average intra-distance simulated
-        
+
     pinter : float, optiona, 'None' by default
         Average inter-distance simulated
-        
+
     intra : list of floats, optional, 'None' by default
         Dataset of Dks intra-distance values
-        
+
     inter : list of floats, optional, 'None' by default
         Dataset of Dks inter-distance values
-        
-    Warning
+    
+    Methods
     -------
-    Either 'filename' or all 'ninst', 'nrep', 'nbits', 'pintra', 'pinter', 'intra', 'inter' parameters must be provided.
+    load(filename)
+        his function allows to load a Dks distribution in text format.
+        
+    save(filename)
+        Saves the Dks distribution object to a file.
+        
+    plot(intra=True, intra_fit=True, inter=True, inter_fit=True)
+        Plots the Hamming distribution. If intra or intra_fit is True, it plots the intra-distribution and its fit. If inter or inter_fit is True, plots the inter-distribution and its fit.
+        
+    intra_fit(x)
+        Returns the probability density function (pdf) value for the Dks intra-distribution at x.
+        
+    intra_p_value(observed_intra_Dks):
+        Given the Johnson SB fit to the Dks intra distribution, this function computes the probability of observing a Dks value as extreme, or more extreme, as the value observed (i.e., computes the area below the Johnson SB density from the observed data to infinity). If the value returned by this method is smaller than a significance level alpha, the hypothesis that the observed Hamming intra-distance distribution fits a binomial must be rejected.
+        
+    inter_fit(x):
+        Returns the probability density function (pdf) value for the Dks inter-distribution at x.
+        
+    inter_p_value(observed_inter_Dks):
+        Given the Johnson SB fit to the Dks inter distribution, this function computes the probability of observing a Dks value as extreme, or more extreme, as the value observed (i.e., computes the area below the Johnson SB density from the observed data to infinity). If the value returned by this method is smaller than a significance level alpha, the hypothesis that the observed Hamming inter-distance distribution fits a binomial must be rejected.
+
+    plot(self, intra=True, intra_fit=True, inter=True, inter_fit=True, intra_bins=10, inter_bins=10):
+        Plots the Hamming distribution. If intra or intra_fit is True, plots the intra-distribution and its fit. If inter or inter_fit is True, plots the inter-distribution and its fit.
     """    
-    def __init__(self, filename=None, ninst=None, nrep=None, nbits=None, pintra=None, pinter=None, intra=None, inter=None):
-        if isinstance(filename, type(None)):
-            try:
-                self.ninst=ninst
-                """int: Number of instances simulated"""
-                self.nrep=nrep
-                """int: Number of repetitions"""
-                self.nbits=nbits
-                """int: Number of PUF's responses bits"""
-                self.pintra=pintra
-                """float: Average intra-distance simulated"""
-                self.pinter=pinter
-                """float: Average inter-distance simulated"""
-                self.intra=intra
-                """list of floats: Dataset of Dks intra-distance values"""
-                self.inter=inter
-                """list of floats: Dataset of Dks inter-distance values"""
-            except Exception as e:
-                print(f'Exception {e} occurred. Since filename is not provided, make sure that all the remaining arguments are properly provided.')
-        else:
-            data_read = _read_dictionary_from_file(filename)
-            self.ninst=int(data_read['ninst'])
-            self.nrep=int(data_read['nrep'])
-            self.nbits=int(data_read['nbits'])
-            self.pintra=float(data_read['pintra'])
-            self.pinter=float(data_read['pinter'])
-            self.intra=list(map(float, data_read['intra'].strip(' []\n').split(',')))
-            self.inter=list(map(float, data_read['inter'].strip(' []\n').split(',')))
-            
-        if len(self.intra)>1:
+    def __init__(self, ninst=None, nrep=None, nbits=None, pintra=None, pinter=None, intra=None, inter=None):
+        """
+        Constructor method.
+        """
+        self.ninst=ninst
+        """int: Number of instances simulated"""
+        self.nrep=nrep
+        """int: Number of repetitions"""
+        self.nbits=nbits
+        """int: Number of PUF's responses bits"""
+        self.pintra=pintra
+        """float: Average intra-distance simulated"""
+        self.pinter=pinter
+        """float: Average inter-distance simulated"""
+        self.intra=intra
+        """list of floats: Dataset of Dks intra-distance values"""
+        self.inter=inter
+        """list of floats: Dataset of Dks inter-distance values"""
+        if not isinstance(intra, type(None)):
             self.intra_fit_params=_johnsonsb.fit(self.intra)
             """list of floats: Parameters of the Johnson SB distribution that fits best the dataset of Dks intra-distance provided. If len(intra)<2 this attribute is not created"""
+        if not isinstance(inter, type(None)):
+            self.inter_fit_params=_johnsonsb.fit(self.inter)
+            """list of floats: Parameters of the Johnson SB distribution that fits best the dataset of Dks inter-distance provided. If len(inter)<2 this attribute is not created"""            
+
+    def load(self, filename):
+        """
+        This function allows to load a Dks distribution in text format.
+        
+        Parameters
+        ----------
+        filename : str, optional, 'None' by default
+            Path to the file that contains the Dks intra/inter distributios which is used to feed this class' object. The format of this file is:
+                # Dks Intra / inter distributions
+                ninst: [Number of instances simulated]
+                nrep: [Number of repetitions]
+                nbits: [Number of PUF's responses bits]
+                pintra: [Average intra-distance simulated]
+                pinter: [Average inter-distance simulated]
+                intra: [List of Dks intra-distance values]
+                inter: [List of Dks inter-distance values]        
+        """
+        data_read = _read_dictionary_from_file(filename)
+        self.ninst=int(data_read['ninst'])
+        self.nrep=int(data_read['nrep'])
+        self.nbits=int(data_read['nbits'])
+        self.pintra=float(data_read['pintra'])
+        self.pinter=float(data_read['pinter'])
+        self.intra=list(map(float, data_read['intra'].strip(' []\n').split(',')))
+        self.inter=list(map(float, data_read['inter'].strip(' []\n').split(','))) 
+        if len(self.intra)>1:
+            self.intra_fit_params=_johnsonsb.fit(self.intra)
         if len(self.inter)>1:
             self.inter_fit_params=_johnsonsb.fit(self.inter)
-            """list of floats: Parameters of the Johnson SB distribution that fits best the dataset of Dks inter-distance provided. If len(inter)<2 this attribute is not created"""
-       
+    
     def save(self, filename):
         """
         Saves the Dks distribution object to a file.
