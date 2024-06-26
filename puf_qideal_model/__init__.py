@@ -138,7 +138,7 @@ class HammingDistribution:
         -------
         None
         """
-        data_to_write = f'# Intra- / inter-hamming distributions\n# Average intra-distance = {100*self.pintra:.3f}%\n# Average inter-distance = {100*self.pinter:.3f}%\nninst: {self.ninst}\nnrep: {self.nrep}\nnbits: {self.nbits}\nintra: {self.intra}\ninter: {self.inter}'
+        data_to_write = f'# Intra- / inter-hamming distributions\n# Average intra-distance = {100*self.pintra:.3f}%\n# Average inter-distance = {100*self.pinter:.3f}%\nninst: {self.ninst}\nnrep: {self.nrep}\nnbits: {self.nbits}\nintra: {[int(i) for i in self.intra]}\ninter: {[int(i) for i in self.inter]}'
         with open(filename, "w") as f:
             f.write(data_to_write)
 
@@ -295,7 +295,7 @@ class DksDistribution:
         -------
         None
         """
-        data_to_write = f'# Dks Intra / inter distributions\nninst: {self.ninst}\nnrep: {self.nrep}\nnbits: {self.nbits}\npintra: {self.pintra}\npinter: {self.pinter}\nintra: {self.intra}\ninter: {self.inter}'
+        data_to_write = f'# Dks Intra / inter distributions\nninst: {self.ninst}\nnrep: {self.nrep}\nnbits: {self.nbits}\npintra: {self.pintra}\npinter: {self.pinter}\nintra: {[float(i) for i in self.intra]}\ninter: {[float(i) for i in self.inter]}'
         with open(filename, "w") as f:
             f.write(data_to_write)
 
