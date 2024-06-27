@@ -247,11 +247,17 @@ class DksDistribution:
     intra_fit(x)
         Returns the probability density function (pdf) value for the Dks intra-distribution at x.
         
+    intra_alpha_value(alpha)
+        This function returns the Dks coordinate corresponding to a given 'alpha' value for the intra-Dks distribution.
+        
     intra_p_value(observed_intra_Dks):
         Given the Johnson SB fit to the Dks intra distribution, this function computes the probability of observing a Dks value as extreme, or more extreme, as the value observed (i.e., computes the area below the Johnson SB density from the observed data to infinity). If the value returned by this method is smaller than a significance level alpha, the hypothesis that the observed Hamming intra-distance distribution fits a binomial must be rejected.
         
     inter_fit(x):
         Returns the probability density function (pdf) value for the Dks inter-distribution at x.
+        
+    inter_alpha_value(alpha)
+        This function returns the Dks coordinate corresponding to a given 'alpha' value for the inter-Dks distribution.        
         
     inter_p_value(observed_inter_Dks):
         Given the Johnson SB fit to the Dks inter distribution, this function computes the probability of observing a Dks value as extreme, or more extreme, as the value observed (i.e., computes the area below the Johnson SB density from the observed data to infinity). If the value returned by this method is smaller than a significance level alpha, the hypothesis that the observed Hamming inter-distance distribution fits a binomial must be rejected.
@@ -347,6 +353,22 @@ class DksDistribution:
         """
         return _johnsonsb.pdf(x, *self.intra_fit_params)
         
+    def intra_alpha_value(self, alpha):
+        """
+        This function returns the Dks coordinate corresponding to a given 'alpha' value for the intra-Dks distribution.
+
+        Parameters
+        ----------
+        alpha : float
+            Value (per one) of the cumulative area on the right tail whose corresponding Dks value is to be returned.
+            
+        Returns
+        -------
+        float
+            Dks value such that the cumulative probabilioty from it to +infinity equals 'alpha'.
+        """
+        return _johnsonsb.isf(alpha, *self.intra_fit_params)
+        
     def intra_p_value(self, observed_intra_Dks):
         """
         Given the Johnson SB fit to the Dks intra distribution, this function computes the probability of observing a Dks value as extreme, or more extreme, as the value observed (i.e., computes the area below the Johnson SB density from the observed data to infinity). If the value returned by this method is smaller than a significance level alpha, the hypothesis that the observed Hamming intra-distance distribution fits a binomial must be rejected.
@@ -378,6 +400,22 @@ class DksDistribution:
             The pdf value at x.
         """
         return _johnsonsb.pdf(x, *self.inter_fit_params)
+        
+    def inter_alpha_value(self, alpha):
+        """
+        This function returns the Dks coordinate corresponding to a given 'alpha' value for the inter-Dks distribution.
+
+        Parameters
+        ----------
+        alpha : float
+            Value (per one) of the cumulative area on the right tail whose corresponding Dks value is to be returned.
+            
+        Returns
+        -------
+        float
+            Dks value such that the cumulative probabilioty from it to +infinity equals 'alpha'.
+        """
+        return _johnsonsb.isf(alpha, *self.inter_fit_params)        
         
     def inter_p_value(self, observed_inter_Dks):
         """
