@@ -141,6 +141,38 @@ class HammingDistribution:
         data_to_write = f'# Intra- / inter-hamming distributions\n# Average intra-distance = {100*self.pintra:.3f}%\n# Average inter-distance = {100*self.pinter:.3f}%\nninst: {self.ninst}\nnrep: {self.nrep}\nnbits: {self.nbits}\nintra: {[int(i) for i in self.intra]}\ninter: {[int(i) for i in self.inter]}'
         with open(filename, "w") as f:
             f.write(data_to_write)
+            
+    def intra_fit(self, x):
+        """
+        Returns the binomial mass function value for the Hamming intra-distribution at x.
+        
+        Parameters
+        ----------
+        x : int or list of int
+            The value for which to calculate the probability value.
+        
+        Returns
+        -------
+        float
+            The probability value at x.
+        """
+        return _binom.pmf(k=x, n=self.nbits,p=self.pintra)
+        
+    def inter_fit(self, x):
+        """
+        Returns the binomial mass function value for the Hamming inter-distribution at x.
+        
+        Parameters
+        ----------
+        x : int or list of int
+            The value for which to calculate the probability value.
+        
+        Returns
+        -------
+        float
+            The probability value at x.
+        """
+        return _binom.pmf(k=x, n=self.nbits,p=self.pinter)        
 
     def plot(self, intra=True, intra_fit=True, inter=True, inter_fit=True):
         """
@@ -305,7 +337,7 @@ class DksDistribution:
         
         Parameters
         ----------
-        x : int
+        x : float
             The value for which to calculate the pdf value.
         
         Returns
@@ -337,7 +369,7 @@ class DksDistribution:
         
         Parameters
         ----------
-        x : int
+        x : float
             The value for which to calculate the pdf value.
         
         Returns

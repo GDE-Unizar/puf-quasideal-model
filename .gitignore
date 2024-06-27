@@ -1,8 +1,7 @@
 # Package cache and distribution files
 puf_qideal_model/__pycache__
 puf_qideal_model/__pycache__/*
-PUF_quasideal_model.egg-info
-PUF_quasideal_model.egg-info/*
+*.egg-info
 wheels
 wheels/*
 dist
